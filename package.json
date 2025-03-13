@@ -1,0 +1,29 @@
+{
+  "name": "html_canvas_graph",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint js/",
+    "lint:fix": "eslint js/ --fix",
+    "lint:report": "eslint js/ --format html --output-file eslint-report.html",
+    "start": "npx http-server -o"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/qwq-qwq/html_canvas_graph.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/qwq-qwq/html_canvas_graph/issues"
+  },
+  "homepage": "https://github.com/qwq-qwq/html_canvas_graph#readme",
+  "devDependencies": {
+    "@eslint/js": "^9.22.0",
+    "eslint": "^9.22.0",
+    "globals": "^16.0.0"
+  }
+}
