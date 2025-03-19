@@ -171,16 +171,33 @@ else
     docker logs jenkins
 fi
 
+# Получение IP-адреса сервера
+SERVER_IP=$(hostname -I | awk '{print $1}')
+
 # Настройка Jenkins для работы в подпапке
 echo -e "${YELLOW}Настройка Jenkins для работы в подпапке...${NC}"
 docker exec jenkins bash -c "mkdir -p /var/jenkins_home/init.groovy.d/"
-docker exec jenkins bash -c "cat > /var/jenkins_home/init.groovy.d/set-prefix.groovy << 'GROOVY'
+cat > /tmp/set-prefix.groovy << EOF
 import jenkins.model.Jenkins
 
 def jenkins = Jenkins.instance
-jenkins.setRootUrl(\"http://\$(hostname -I | awk '{print \$1}')/jenkins/\")
+jenkins.setRootUrl("http://${SERVER_IP}/jenkins/")
 jenkins.save()
-GROOVY"
+EOF
+docker cp /tmp/set-prefix.groovy jenkins:/var/jenkins_home/init.groovy.d/set-prefix.groovy
+rm /tmp/set-prefix.groovy
+
+# Создание файла конфигурации для корректной работы Jenkins в подпапке
+echo -e "${YELLOW}Создание файла конфигурации для jenkins.model.JenkinsLocationConfiguration.xml...${NC}"
+cat > /tmp/jenkins.model.JenkinsLocationConfiguration.xml << EOF
+<?xml version='1.1' encoding='UTF-8'?>
+<jenkins.model.JenkinsLocationConfiguration>
+  <adminAddress>admin@example.com</adminAddress>
+  <jenkinsUrl>http://${SERVER_IP}/jenkins/</jenkinsUrl>
+</jenkins.model.JenkinsLocationConfiguration>
+EOF
+docker cp /tmp/jenkins.model.JenkinsLocationConfiguration.xml jenkins:/var/jenkins_home/jenkins.model.JenkinsLocationConfiguration.xml
+rm /tmp/jenkins.model.JenkinsLocationConfiguration.xml
 
 # Перезапуск Jenkins для применения настроек
 echo -e "${YELLOW}Перезапуск Jenkins для применения настроек...${NC}"
@@ -188,12 +205,12 @@ docker restart jenkins
 
 # Информация о доступе
 echo -e "${GREEN}Установка завершена!${NC}"
-echo -e "${YELLOW}Jenkins доступен по адресу: http://$(hostname -I | awk '{print $1}')/jenkins/${NC}"
-echo -e "${YELLOW}После настройки Jenkins, ваше приложение HTML Canvas Graph будет доступно по адресу: http://$(hostname -I | awk '{print $1}')/#{NC}"
+echo -e "${YELLOW}Jenkins доступен по адресу: http://${SERVER_IP}/jenkins/${NC}"
+echo -e "${YELLOW}После настройки Jenkins, ваше приложение HTML Canvas Graph будет доступно по адресу: http://${SERVER_IP}/${NC}"
 
 # Инструкции по дальнейшей настройке
 echo -e "${YELLOW}Дальнейшие шаги:${NC}"
-echo -e "1. Завершите первоначальную настройку Jenkins по адресу: http://$(hostname -I | awk '{print $1}')/jenkins/"
+echo -e "1. Завершите первоначальную настройку Jenkins по адресу: http://${SERVER_IP}/jenkins/"
 echo -e "2. Установите рекомендуемые плагины"
 echo -e "3. Создайте пайплайн Jenkins, указав путь к вашему Git-репозиторию"
 echo -e "4. Настройте вебхуки для автоматического запуска сборки при пуше в репозиторий" 
