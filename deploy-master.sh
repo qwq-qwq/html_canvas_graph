@@ -73,7 +73,9 @@ services:
       - /usr/bin/docker:/usr/bin/docker
       - /usr/local/bin/docker-compose:/usr/local/bin/docker-compose
     environment:
-      - TZ=Europe/Moscow
+      - TZ=Europe/Kiev
+    networks:
+      - app-network
 
   # Опционально: Nginx для проксирования запросов к Jenkins
   nginx:
@@ -89,13 +91,13 @@ services:
     depends_on:
       - jenkins
     networks:
-      - jenkins-network
+      - app-network
 
 volumes:
   jenkins_home:
 
 networks:
-  jenkins-network:
+  app-network:
     driver: bridge
 EOF
 
