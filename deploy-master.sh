@@ -105,7 +105,7 @@ EOF
 cat > nginx/conf.d/default.conf << 'EOF'
 server {
     listen 80;
-    server_name _;  # Замените на ваш домен, если он есть
+    server_name canvas.perek.rest;  # Замените на ваш домен, если он есть
     
     # Редирект на HTTPS (раскомментируйте при настройке SSL)
     # return 301 https://$host$request_uri;
