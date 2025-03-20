@@ -41,12 +41,12 @@ pipeline {
             }
         }
         
-        stage('Build Docker Image') {
-            steps {
-                // Собираем Docker-образ
-                sh "docker build -t ${env.APP_NAME}:${env.BUILD_NUMBER} -t ${env.APP_NAME}:latest ."
-            }
-        }
+        //stage('Build Docker Image') {
+        //    steps {
+        //        // Собираем Docker-образ
+        //        sh "docker build -t ${env.APP_NAME}:${env.BUILD_NUMBER} -t ${env.APP_NAME}:latest ."
+        //    }
+        //}
         
         stage('Prepare Deployment') {
             steps {
