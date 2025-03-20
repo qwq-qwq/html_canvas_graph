@@ -3,8 +3,8 @@ pipeline {
     
     environment {
         // Настройки приложения
-        APP_NAME = "graph"
-        APP_DIR = "/opt/graph"
+        PP_NAME = "graph"
+        APP_DIR = "/opt/projects/${APP_NAME}"
 
         // Настройки Docker
         DOCKER_HOST = "unix:///var/run/docker.sock"
