@@ -54,7 +54,8 @@ pipeline {
                 sh "mkdir -p ${env.APP_DIR}/html ${env.APP_DIR}/nginx/conf.d"
                 
                 // Копируем необходимые файлы в директорию деплоя
-                sh "cp -r html/* ${env.APP_DIR}/html/ || true"
+                sh "cp -r index.html ${env.APP_DIR}/html/ || true"
+                sh "cp -r js/* ${env.APP_DIR}/html/js || true"
                 sh "cp -r nginx/conf.d/* ${env.APP_DIR}/nginx/conf.d/ || true"
                 sh "cp docker-compose.yml ${env.APP_DIR}/"
                 
