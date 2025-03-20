@@ -51,7 +51,7 @@ pipeline {
         stage('Prepare Deployment') {
             steps {
                 // Создаем директорию для деплоя если она не существует
-                sh "mkdir -p ${env.APP_DIR}/html ${env.APP_DIR}/nginx/conf.d"
+                sh "mkdir -p ${env.APP_DIR}/html ${env.APP_DIR}/html/js ${env.APP_DIR}/nginx/conf.d"
                 
                 // Копируем необходимые файлы в директорию деплоя
                 sh "cp -r index.html ${env.APP_DIR}/html/ || true"
