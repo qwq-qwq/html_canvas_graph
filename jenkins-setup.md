@@ -25,7 +25,7 @@ services:
       - /usr/bin/docker:/usr/bin/docker
       - /usr/local/bin/docker-compose:/usr/local/bin/docker-compose
     environment:
-      - TZ=Europe/Moscow
+      - TZ=Europe/Kiev
 
 volumes:
   jenkins_home:

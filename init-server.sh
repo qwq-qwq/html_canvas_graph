@@ -87,7 +87,7 @@ fi
 
 # Настройка временной зоны
 echo -e "${YELLOW}Настройка временной зоны...${NC}"
-timedatectl set-timezone Europe/Moscow  # Измените на вашу временную зону
+timedatectl set-timezone Europe/Kiev  # Измените на вашу временную зону
 
 # Настройка swap (опционально для малых инстансов)
 echo -e "${YELLOW}Настройка swap-файла...${NC}"
