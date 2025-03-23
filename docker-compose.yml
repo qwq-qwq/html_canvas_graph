@@ -11,7 +11,15 @@ services:
       - graph_logs:/var/log/nginx
     environment:
       - TZ=Europe/Kiev
-      # Дополнительные переменные окружения можно добавить здесь
+    networks:
+      - web-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.graph.rule=Host(`graph.perek.rest`)"
+      - "traefik.http.routers.graph.entrypoints=websecure"
+      - "traefik.http.routers.graph.tls=true"
+      - "traefik.http.routers.graph.tls.certresolver=myresolver"
+      - "traefik.http.services.graph.loadbalancer.server.port=80"
     logging:
       driver: "json-file"
       options:
@@ -20,3 +28,7 @@ services:
 
 volumes:
   graph_logs:
+
+networks:
+  web-network:
+    external: true
