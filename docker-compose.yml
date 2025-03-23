@@ -12,7 +12,7 @@ services:
     environment:
       - TZ=Europe/Kiev
     networks:
-      - web-network
+      - traefik_web-network
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.graph.rule=Host(`graph.perek.rest`)"
@@ -30,5 +30,5 @@ volumes:
   graph_logs:
 
 networks:
-  web-network:
+  traefik_web-network:
     external: true
