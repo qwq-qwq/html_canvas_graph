@@ -19,7 +19,7 @@ const fillMode = 'fill' // fill, fade, clear - режимы очистки эк�
 let fadeAmount = 0.02 // Значение для частичного затемнения в режиме fade
 
 // Параметры шпателя
-let drawMode = 'particles' // 'particles', 'palette' или 'auto'
+let drawMode = 'particles' // 'particles', 'palette', 'auto', 'audioParticles'
 let paletteWidth = 50
 let paletteLength = 150
 let paletteRotation = 0 // Вращение шпателя в градусах

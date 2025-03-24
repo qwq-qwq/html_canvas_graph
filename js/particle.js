@@ -1,58 +1,127 @@
 // Класс для частиц
 class Particle {
   constructor() {
-    this.x = mouse.x
-    this.y = mouse.y
-    this.size = Math.random() * particleSize + 1
-    this.speedX = Math.random() * 6 - 3
-    this.speedY = Math.random() * 6 - 3
-    this.color = getParticleColor()
+    // В аудио режиме создаем частицы в случайном месте с начальной скоростью от центра
+    if (drawMode === 'audioParticles') {
+      // Вычисляем направление от центра экрана
+      const angle = Math.random() * Math.PI * 2;
+      const distance = Math.random() * Math.min(canvas.width, canvas.height) * 0.2; // Уменьшаем область появления
+      
+      // Устанавливаем позицию относительно центра
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      this.x = centerX + Math.cos(angle) * distance;
+      this.y = centerY + Math.sin(angle) * distance;
+      
+      // Начальная скорость направлена от центра
+      const speed = Math.random() * 1 + 0.5; // Уменьшаем начальную скорость
+      this.speedX = Math.cos(angle) * speed;
+      this.speedY = Math.sin(angle) * speed;
+    } else {
+      // Обычный режим - создаем частицы у курсора
+      this.x = mouse.x;
+      this.y = mouse.y;
+      this.speedX = Math.random() * 6 - 3;
+      this.speedY = Math.random() * 6 - 3;
+    }
+
+    // Уменьшаем базовый размер частиц для аудио режима
+    if (drawMode === 'audioParticles') {
+      this.size = Math.random() * (particleSize * 0.3) + 0.5;
+    } else {
+      this.size = Math.random() * particleSize + 1;
+    }
+    
+    this.color = getParticleColor();
 
     // Добавляем гравитацию и затухание
-    this.gravity = 0.03
-    this.friction = 0.99
+    this.gravity = 0.01; // Уменьшаем гравитацию
+    this.friction = 0.99;
 
     // Время жизни частицы (от 100 до 200 обновлений)
-    this.life = 100 + Math.random() * 100
-    this.opacity = 1
+    this.life = 100 + Math.random() * 100;
+    this.opacity = 1;
+
+    // Добавляем параметры для аудио-движения
+    this.audioSpeed = Math.random() * 2 + 1; // Уменьшаем скорость аудио-движения
+    this.audioAngle = Math.random() * Math.PI * 2;
+    this.audioAmplitude = Math.random() * 30 + 10; // Уменьшаем амплитуду
+    this.audioFrequency = Math.random() * 2 + 1;
+    this.audioPhase = Math.random() * Math.PI * 2;
   }
 
   update() {
     // Применяем гравитацию и трение
-    this.speedY += this.gravity
-    this.speedX *= this.friction
-    this.speedY *= this.friction
+    this.speedY += this.gravity;
+    this.speedX *= this.friction;
+    this.speedY *= this.friction;
 
-    this.x += this.speedX
-    this.y += this.speedY
+    // Добавляем аудио-движение если режим активен
+    if (drawMode === 'audioParticles') {
+      if (!isAudioActive) {
+        console.log('Audio mode is active but audio is not initialized');
+        return;
+      }
+
+      const audioData = getAudioData();
+      if (audioData) {
+        // Используем разные частотные диапазоны для разных эффектов
+        const bassInfluence = audioData.bass * this.audioAmplitude * 2;
+        const midInfluence = audioData.mid * this.audioAmplitude;
+        const highInfluence = audioData.high * this.audioAmplitude * 0.5;
+        
+        // Комбинируем влияние разных частот
+        const audioInfluence = (bassInfluence + midInfluence + highInfluence) / 3;
+        
+        // Добавляем колебательное движение
+        const oscillation = Math.sin(this.audioPhase + this.audioFrequency) * audioInfluence;
+        
+        // Добавляем движение в зависимости от аудио (уменьшаем влияние)
+        this.speedX += Math.cos(this.audioAngle) * audioInfluence * this.audioSpeed * 0.05;
+        this.speedY += Math.sin(this.audioAngle) * audioInfluence * this.audioSpeed * 0.05;
+        
+        // Добавляем колебательное движение (уменьшаем влияние)
+        this.speedX += Math.cos(this.audioAngle + Math.PI/2) * oscillation * this.audioSpeed * 0.05;
+        this.speedY += Math.sin(this.audioAngle + Math.PI/2) * oscillation * this.audioSpeed * 0.05;
+        
+        // Изменяем размер частицы в зависимости от аудио (уменьшаем влияние)
+        this.size = Math.max(0.2, this.size + (audioInfluence * 0.5));
+        
+        // Обновляем фазу колебаний
+        this.audioPhase += 0.1;
+      }
+    }
+
+    this.x += this.speedX;
+    this.y += this.speedY;
 
     // Отражение от краев экрана
     if (this.x <= 0 || this.x >= canvas.width) {
-      this.speedX *= -0.7
+      this.speedX *= -0.7;
     }
     if (this.y <= 0 || this.y >= canvas.height) {
-      this.speedY *= -0.7
+      this.speedY *= -0.7;
     }
 
-    // Уменьшаем размер
+    // Уменьшаем размер медленнее
     if (this.size > 0.2) {
-      this.size -= 0.1
+      this.size -= 0.05;
     }
 
     // Уменьшаем время жизни и прозрачность
-    this.life--
-    if (this.life < 50) { // Когда осталось меньше 50 тиков, начинаем уменьшать прозрачность
-      this.opacity = this.life / 50
+    this.life--;
+    if (this.life < 50) {
+      this.opacity = this.life / 50;
     }
   }
 
   draw() {
-    ctx.globalAlpha = this.opacity
-    ctx.fillStyle = this.color
-    ctx.beginPath()
-    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2)
-    ctx.fill()
-    ctx.globalAlpha = 1
+    ctx.globalAlpha = this.opacity;
+    ctx.fillStyle = this.color;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
   }
 }
 

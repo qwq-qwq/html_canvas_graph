@@ -2,7 +2,7 @@
 function animate() {
   try {
     // Применяем разные режимы заполнения экрана
-    if (drawMode !== 'auto' && drawMode !== 'waveParticles') {
+    if (drawMode !== 'auto' && drawMode !== 'waveParticles' && drawMode !== 'audioParticles') {
       if (fillMode === 'clear') {
         // Полная очистка холста
         ctx.clearRect(0, 0, canvas.width, canvas.height)
@@ -16,11 +16,33 @@ function animate() {
       // В авторежиме используем более медленное затухание для создания следов
       ctx.fillStyle = `rgba(0,0,0,${fadeAmount * 0.5})`
       ctx.fillRect(0, 0, canvas.width, canvas.height)
+    } else if (drawMode === 'audioParticles') {
+      // В аудио режиме используем быстрое затухание
+      ctx.fillStyle = `rgba(0,0,0,${fadeAmount * 2})`
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+      // Создаем частицы на основе звука
+      if (isAudioActive) {
+        const audioData = getAudioData();
+        if (audioData) {
+          // Создаем частицы только если уровень звука достаточно высокий
+          if (audioData.normalized > 0.15) {
+            // Уменьшаем количество создаваемых частиц
+            const particlesToCreate = Math.floor(audioData.normalized * 3);
+            
+            for (let i = 0; i < particlesToCreate; i++) {
+              // Распределяем частицы по экрану случайным образом
+              mouse.x = Math.random() * canvas.width;
+              mouse.y = Math.random() * canvas.height;
+              particleArray.push(new Particle());
+            }
+          }
+        }
+      }
     }
-    // Режим waveParticles обрабатывает очистку внутри своей функции
 
     // Обновляем соответствующие элементы в зависимости от режима
-    if (drawMode === 'particles') {
+    if (drawMode === 'particles' || drawMode === 'audioParticles') {
       handleParticles()
     } else if (drawMode === 'auto') {
       // Сохраняем базовое значение ширины шпателя перед вызовом авторежимов

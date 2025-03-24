@@ -122,7 +122,7 @@ window.addEventListener('keydown', function(event) {
     }
   }
 
-  if (drawMode === 'particles') {
+  if (drawMode === 'particles' || drawMode === 'audioParticles') {
     // Управление для режима частиц
 
     // Изменение размера частиц
@@ -165,6 +165,17 @@ window.addEventListener('keydown', function(event) {
     // Изменение базового оттенка для monochrome
     if (event.key === 'q') {
       baseHue = (baseHue + 30) % 360
+    }
+
+    // Переключение режима аудио-частиц
+    if (event.key === 'a') {
+      if (drawMode === 'audioParticles') {
+        drawMode = 'particles'
+        stopAudio()
+      } else {
+        drawMode = 'audioParticles'
+        initAudio()
+      }
     }
   } else if (drawMode === 'palette' || drawMode === 'auto') {
     // Общие настройки для ручного и автоматического режима шпателя
