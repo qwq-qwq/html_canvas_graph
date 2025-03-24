@@ -2,10 +2,14 @@ pipeline {
     agent any
     
     environment {
-        DOCKER_COMPOSE_VERSION = '2.18.1'
-        APP_DIR = '/opt/canvas-graph'
-        APP_NAME = 'canvas-graph'
-        DOCKER_HOST = 'unix:///var/run/docker.sock'
+        // Настройки приложения
+        APP_NAME = "graph"
+        APP_DIR = "/opt/projects/${APP_NAME}"
+
+        // Настройки Docker
+        DOCKER_HOST = "unix:///var/run/docker.sock"
+
+        // Информация о сборке
         GIT_COMMIT_SHORT = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
         BUILD_TIMESTAMP = sh(script: "date +%Y%m%d_%H%M%S", returnStdout: true).trim()
     }
@@ -26,59 +30,48 @@ pipeline {
             }
         }
         
-        stage('Setup') {
+        stage('Build Static Files') {
             steps {
-                // Устанавливаем Node.js
-                nodejs(nodeJSInstallationName: 'NodeJS 18') {
-                    sh 'node --version'
-                    sh 'npm --version'
-                }
+                // Пример сборки статических файлов (если требуется)
+                // Например, минификация JS, компиляция SASS и т.д.
+                sh 'echo "Building static files..."'
+
+                // Если требуется сборка с использованием npm/yarn
+                // sh 'npm install && npm run build'
             }
         }
         
-        stage('Lint') {
-            steps {
-                // Запускаем линтер для проверки кода
-                nodejs(nodeJSInstallationName: 'NodeJS 18') {
-                    sh 'npm install'
-                    sh 'npm run lint:fix'
-                }
-            }
-        }
+        //stage('Build Docker Image') {
+        //    steps {
+        //        // Собираем Docker-образ
+        //        sh "docker build -t ${env.APP_NAME}:${env.BUILD_NUMBER} -t ${env.APP_NAME}:latest ."
+        //    }
+        //}
         
         stage('Prepare Deployment') {
             steps {
                 // Создаем директорию для деплоя если она не существует
-                sh "mkdir -p ${env.APP_DIR}"
+                sh "mkdir -p ${env.APP_DIR}/html ${env.APP_DIR}/html/js ${env.APP_DIR}/nginx/conf.d"
                 
                 // Копируем необходимые файлы в директорию деплоя
-                sh "cp -r index.html js/ nginx.conf Dockerfile docker-compose.yml ${env.APP_DIR}/"
+                sh "cp -r index.html ${env.APP_DIR}/html/"
+                sh "cp -r js/* ${env.APP_DIR}/html/js"
+                sh "cp -r nginx/conf.d/* ${env.APP_DIR}/nginx/conf.d/"
+                sh "cp docker-compose.yml ${env.APP_DIR}/"
                 
                 // Создаем метку версии
                 sh "echo 'BUILD_ID=${env.BUILD_ID}\nBUILD_NUMBER=${env.BUILD_NUMBER}\nGIT_COMMIT=${env.GIT_COMMIT_SHORT}\nBUILD_TIMESTAMP=${env.BUILD_TIMESTAMP}' > ${env.APP_DIR}/version.txt"
             }
         }
-        
-        stage('Build Docker Image') {
-            steps {
-                dir("${env.APP_DIR}") {
-                    // Собираем Docker-образ
-                    sh "docker build -t ${env.APP_NAME}:${env.BUILD_NUMBER} -t ${env.APP_NAME}:latest ."
-                }
-            }
-        }
-        
+
         stage('Deploy') {
             steps {
                 dir("${env.APP_DIR}") {
                     // Останавливаем предыдущие контейнеры если они есть
                     sh 'docker-compose down || true'
                     
-                    // Обновляем версию образа в docker-compose.yml
-                    sh "sed -i 's|image: canvas-app|image: ${env.APP_NAME}:${env.BUILD_NUMBER}|g' docker-compose.yml"
-                    
-                    // Собираем и запускаем контейнеры
-                    sh 'docker-compose up -d --build'
+                    // Запускаем контейнеры
+                    sh 'docker-compose up -d'
                 }
             }
         }
@@ -86,7 +79,7 @@ pipeline {
         stage('Verify Deployment') {
             steps {
                 // Проверяем что контейнер запущен
-                sh 'docker ps | grep canvas-graph'
+                sh "docker ps | grep ${env.APP_NAME}-nginx"
                 
                 // Ждем немного для инициализации приложения
                 sh 'sleep 5'
