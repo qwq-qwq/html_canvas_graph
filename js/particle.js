@@ -77,15 +77,15 @@ class Particle {
         const oscillation = Math.sin(this.audioPhase + this.audioFrequency) * audioInfluence;
         
         // Добавляем движение в зависимости от аудио (уменьшаем влияние)
-        this.speedX += Math.cos(this.audioAngle) * audioInfluence * this.audioSpeed * 0.05;
-        this.speedY += Math.sin(this.audioAngle) * audioInfluence * this.audioSpeed * 0.05;
+        this.speedX += Math.cos(this.audioAngle) * audioInfluence * this.audioSpeed * 0.0005;
+        this.speedY += Math.sin(this.audioAngle) * audioInfluence * this.audioSpeed * 0.0005;
         
         // Добавляем колебательное движение (уменьшаем влияние)
-        this.speedX += Math.cos(this.audioAngle + Math.PI/2) * oscillation * this.audioSpeed * 0.05;
-        this.speedY += Math.sin(this.audioAngle + Math.PI/2) * oscillation * this.audioSpeed * 0.05;
+        this.speedX += Math.cos(this.audioAngle + Math.PI/2) * oscillation * this.audioSpeed * 0.005;
+        this.speedY += Math.sin(this.audioAngle + Math.PI/2) * oscillation * this.audioSpeed * 0.005;
         
         // Изменяем размер частицы в зависимости от аудио (уменьшаем влияние)
-        this.size = Math.max(0.2, this.size + (audioInfluence * 0.5));
+        this.size = Math.max(0.2, this.size + (audioInfluence * 0.3));
         
         // Обновляем фазу колебаний
         this.audioPhase += 0.1;
