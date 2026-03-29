@@ -15,7 +15,7 @@ let particlesPerClick = 10
 let particlesPerMove = 5
 let colorMode = 'rainbow' // rainbow, monochrome, pastel
 let baseHue = 180 // Базовый оттенок для режима monochrome
-const fillMode = 'fill' // fill, fade, clear - режимы очистки экрана
+const fillMode = 'fade' // fill, fade, clear - режимы очистки экрана
 let fadeAmount = 0.02 // Значение для частичного затемнения в режиме fade
 
 // Показ справки

@@ -20,7 +20,7 @@ function displayInfo() {
   ctx.save()
   ctx.fillStyle = 'rgba(0, 0, 0, 0.6)'
   const boxW = 360
-  const boxH = 230
+  const boxH = 256
   const boxX = (canvas.width - boxW) / 2
   const boxY = (canvas.height - boxH) / 2
   ctx.fillRect(boxX, boxY, boxW, boxH)
@@ -38,6 +38,7 @@ function displayInfo() {
     '1 — радуга  2 — монохром  3 — пастель',
     'q — сменить оттенок (монохром)',
     'c / v — скорость затухания',
+    'клик — взрыв частиц',
   ]
   for (const line of lines) {
     ctx.fillText(line, x, y)

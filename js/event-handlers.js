@@ -14,8 +14,9 @@ canvas.addEventListener('click', function(event){
   mouse.x = event.x
   mouse.y = event.y
 
-  for(let i=0; i < particlesPerClick; i++){
-    particleArray.push(new Particle())
+  const burstCount = particlesPerClick * 4
+  for(let i=0; i < burstCount; i++){
+    particleArray.push(new Particle(true))
   }
 })
 

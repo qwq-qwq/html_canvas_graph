@@ -1,20 +1,26 @@
 // Класс для частиц
 class Particle {
-  constructor() {
+  constructor(explode) {
     this.x = mouse.x
     this.y = mouse.y
-    this.speedX = Math.random() * 6 - 3
-    this.speedY = Math.random() * 6 - 3
-    this.size = Math.random() * particleSize + 1
     this.color = getParticleColor()
-
-    // Добавляем гравитацию и затухание
     this.gravity = 0.01
     this.friction = 0.99
-
-    // Время жизни частицы (от 100 до 200 обновлений)
-    this.life = 100 + Math.random() * 100
     this.opacity = 1
+
+    if (explode) {
+      const angle = Math.random() * Math.PI * 2
+      const speed = Math.random() * 10 + 3
+      this.speedX = Math.cos(angle) * speed
+      this.speedY = Math.sin(angle) * speed
+      this.size = Math.random() * particleSize * 0.8 + 2
+      this.life = 60 + Math.random() * 80
+    } else {
+      this.speedX = Math.random() * 6 - 3
+      this.speedY = Math.random() * 6 - 3
+      this.size = Math.random() * particleSize + 1
+      this.life = 100 + Math.random() * 100
+    }
   }
 
   update() {
