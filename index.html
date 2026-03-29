@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Художественный редактор</title>
+    <title>Spark</title>
 <style>
     #canvas{
         background: black;
@@ -16,171 +16,37 @@
             padding: 0;
             overflow: hidden;
     }
-    
-    /* Стили для панели управления */
-    #controls {
+
+    #info-btn {
         position: fixed;
-        top: 10px;
-        right: 10px;
-        background: rgba(0, 0, 0, 0.7);
-        color: white;
-        padding: 10px;
-        border-radius: 5px;
-        font-family: Arial, sans-serif;
+        top: 12px;
+        right: 12px;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 1.5px solid rgba(255,255,255,0.5);
+        background: rgba(255,255,255,0.1);
+        color: rgba(255,255,255,0.7);
+        font: bold 18px/32px serif;
+        text-align: center;
+        cursor: pointer;
         z-index: 1000;
-        max-width: 300px;
-        display: none;
+        transition: background 0.2s;
     }
-    
-    #controls h3 {
-        margin-top: 5px;
-        margin-bottom: 10px;
-        font-size: 16px;
-    }
-    
-    #controls label {
-        display: block;
-        margin-bottom: 5px;
-        font-size: 14px;
-    }
-    
-    #controls select, #controls input {
-        width: 100%;
-        margin-bottom: 10px;
-        background: #333;
-        color: white;
-        border: 1px solid #555;
-        padding: 5px;
-        border-radius: 3px;
-    }
-    
-    #controls button {
-        background: #444;
-        color: white;
-        border: none;
-        padding: 5px 10px;
-        margin: 5px 0;
-        border-radius: 3px;
-        cursor: pointer;
-    }
-    
-    #controls button:hover {
-        background: #666;
-    }
-    
-    .color-stop {
-        display: flex;
-        align-items: center;
-        margin-bottom: 5px;
-    }
-    
-    .color-stop input[type="color"] {
-        width: 40px;
-        height: 20px;
-        margin-right: 10px;
-    }
-    
-    .color-stop input[type="number"] {
-        width: 60px;
-    }
-    
-    .color-stop button {
-        margin-left: 10px !important;
-    }
-    
-    #custom-gradient-container {
-        margin-top: 10px;
-        max-height: 150px;
-        overflow-y: auto;
-    }
-    
-    #toggle-controls {
-        position: fixed;
-        top: 10px;
-        right: 10px;
-        background: rgba(0, 0, 0, 0.7);
-        color: white;
-        border: none;
-        padding: 5px 10px;
-        border-radius: 3px;
-        cursor: pointer;
-        z-index: 1001;
+    #info-btn:hover {
+        background: rgba(255,255,255,0.25);
     }
 </style>
 </head>
 <body>
     <canvas id="canvas"></canvas>
-    
-    <!-- Кнопка для показа/скрытия панели управления -->
-    <button id="toggle-controls">Показать настройки</button>
-    
-    <!-- Панель управления градиентами -->
-    <div id="controls">
-        <h3>Настройки волновых частиц</h3>
-        
-        <label for="color-mode">Режим цвета:</label>
-        <select id="color-mode">
-            <option value="hue">Оттенок</option>
-            <option value="rainbow">Радуга</option>
-            <option value="custom">Пользовательский градиент</option>
-            <option value="monochrome">Монохромный</option>
-        </select>
-        
-        <div id="hue-settings">
-            <label for="base-hue">Базовый оттенок:</label>
-            <input type="range" id="base-hue" min="0" max="360" value="180">
-            
-            <label for="hue-range">Диапазон оттенков:</label>
-            <input type="range" id="hue-range" min="0" max="360" value="120">
-        </div>
-        
-        <div id="rainbow-settings">
-            <label for="rainbow-frequency">Частота радуги:</label>
-            <input type="range" id="rainbow-frequency" min="0.5" max="5" step="0.1" value="1">
-        </div>
-        
-        <div id="monochrome-settings">
-            <label for="monochrome-color">Основной цвет:</label>
-            <input type="range" id="monochrome-color" min="0" max="360" value="240">
-            
-            <label for="monochrome-range">Диапазон вариаций:</label>
-            <input type="range" id="monochrome-range" min="0" max="60" value="20">
-        </div>
-        
-        <div id="custom-gradient-settings">
-            <label>Пользовательский градиент:</label>
-            <div id="custom-gradient-container"></div>
-            <button id="add-color-stop">Добавить цвет</button>
-        </div>
-        
-        <label for="saturation">Насыщенность:</label>
-        <input type="range" id="saturation" min="0" max="100" value="100">
-        
-        <label for="lightness">Яркость:</label>
-        <input type="range" id="lightness" min="20" max="80" value="50">
-        
-        <label for="gradient-speed">Скорость изменения градиента:</label>
-        <input type="range" id="gradient-speed" min="0" max="0.1" step="0.001" value="0.01">
-        
-        <label for="color-cycle-speed">Скорость цикла цветов:</label>
-        <input type="range" id="color-cycle-speed" min="0" max="0.1" step="0.001" value="0.005">
-        
-        <button id="apply-settings">Применить настройки</button>
-    </div>
-    
+    <div id="info-btn" title="Справка (i)">i</div>
+
     <!-- Подключаем модули JavaScript -->
     <script src="js/config.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/particle.js"></script>
-    <script src="js/palette.js"></script>
-    <script src="js/auto-modes/spiral.js"></script>
-    <script src="js/auto-modes/flow-field.js"></script>
-    <script src="js/auto-modes/ripple.js"></script>
-    <script src="js/auto-modes/terrain.js"></script>
-    <script src="js/wave-particles.js"></script>
     <script src="js/event-handlers.js"></script>
     <script src="js/main.js"></script>
-    <script src="js/gradient-controls.js"></script>
-    <script src="js/audio-handler.js"></script>
 </body>
 </html>
