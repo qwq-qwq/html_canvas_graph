@@ -1,114 +1,59 @@
 pipeline {
     agent any
-    
+
     environment {
-        // Настройки приложения
-        APP_NAME = "graph"
-        APP_DIR = "/opt/projects/${APP_NAME}"
-
-        // Настройки Docker
-        DOCKER_HOST = "unix:///var/run/docker.sock"
-
-        // Информация о сборке
+        APP_NAME    = "graph"
+        BUCKET      = "graph"
+        SRC_DIR     = "."
+        S3_ENDPOINT = "https://s3.perek.rest"
+        AWS_DEFAULT_REGION = "garage"
+        AWS_REQUEST_CHECKSUM_CALCULATION = "when_required"
+        AWS_RESPONSE_CHECKSUM_VALIDATION = "when_required"
         GIT_COMMIT_SHORT = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
-        BUILD_TIMESTAMP = sh(script: "date +%Y%m%d_%H%M%S", returnStdout: true).trim()
     }
-    
+
     options {
-        timeout(time: 10, unit: 'MINUTES')
+        timeout(time: 5, unit: 'MINUTES')
         disableConcurrentBuilds()
     }
-    
+
     stages {
         stage('Checkout') {
-            steps {
-                // Получаем код из репозитория
-                checkout scm
-                
-                // Выводим информацию о текущей сборке
-                sh 'echo "Building commit: ${GIT_COMMIT_SHORT} at ${BUILD_TIMESTAMP}"'
-            }
-        }
-        
-        stage('Build Static Files') {
-            steps {
-                // Пример сборки статических файлов (если требуется)
-                // Например, минификация JS, компиляция SASS и т.д.
-                sh 'echo "Building static files..."'
-
-                // Если требуется сборка с использованием npm/yarn
-                // sh 'npm install && npm run build'
-            }
-        }
-        
-        //stage('Build Docker Image') {
-        //    steps {
-        //        // Собираем Docker-образ
-        //        sh "docker build -t ${env.APP_NAME}:${env.BUILD_NUMBER} -t ${env.APP_NAME}:latest ."
-        //    }
-        //}
-        
-        stage('Prepare Deployment') {
-            steps {
-                // Создаем директорию для деплоя если она не существует
-                sh "mkdir -p ${env.APP_DIR}/html ${env.APP_DIR}/html/js ${env.APP_DIR}/nginx/conf.d"
-                
-                // Копируем необходимые файлы в директорию деплоя
-                sh "cp -r index.html ${env.APP_DIR}/html/"
-                sh "cp -r js/* ${env.APP_DIR}/html/js"
-                sh "cp -r nginx/conf.d/* ${env.APP_DIR}/nginx/conf.d/"
-                sh "cp docker-compose.yml ${env.APP_DIR}/"
-                
-                // Создаем метку версии
-                sh "echo 'BUILD_ID=${env.BUILD_ID}\nBUILD_NUMBER=${env.BUILD_NUMBER}\nGIT_COMMIT=${env.GIT_COMMIT_SHORT}\nBUILD_TIMESTAMP=${env.BUILD_TIMESTAMP}' > ${env.APP_DIR}/version.txt"
-            }
+            steps { checkout scm }
         }
 
         stage('Deploy') {
             steps {
-                dir("${env.APP_DIR}") {
-                    // Останавливаем предыдущие контейнеры если они есть
-                    sh 'docker-compose down || true'
-                    
-                    // Запускаем контейнеры
-                    sh 'docker-compose up -d'
+                withCredentials([usernamePassword(credentialsId: 'garage-s3',
+                                                  usernameVariable: 'AWS_ACCESS_KEY_ID',
+                                                  passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                    sh '''
+                        echo "$GIT_COMMIT_SHORT" > .version
+                        aws --endpoint-url "$S3_ENDPOINT" s3 sync "$SRC_DIR/" "s3://$BUCKET/" \
+                            --delete \
+                            --exclude ".git/*" \
+                            --exclude "node_modules/*" \
+                            --exclude "Jenkinsfile" \
+                            --exclude "docker-compose.yml" \
+                            --exclude "setup-monitoring.sh" \
+                            --exclude "eslint.config.mjs" \
+                            --exclude "package*.json" \
+                            --exclude "README.md"
+                    '''
                 }
             }
         }
-        
-        stage('Verify Deployment') {
+
+        stage('Verify') {
             steps {
-                // Проверяем что контейнер запущен
-                sh "docker ps | grep ${env.APP_NAME}-nginx"
-                
-                // Ждем немного для инициализации приложения
-                sh 'sleep 5'
-                
-                // Делаем простую проверку доступности
-                sh 'curl -s --head --fail http://localhost || true'
-            }
-        }
-        
-        stage('Cleanup') {
-            steps {
-                // Удаляем старые образы для экономии места
-                sh '''
-                docker image prune -a -f --filter "until=24h"
-                '''
+                sh 'curl -sSf "https://${APP_NAME}.perek.rest/" -o /dev/null'
             }
         }
     }
-    
+
     post {
-        success {
-            echo 'Deployment completed successfully!'
-        }
-        failure {
-            echo 'Deployment failed! Check the logs for details.'
-        }
-        always {
-            // Очистка рабочего пространства
-            cleanWs()
-        }
+        success { echo "Deployed ${APP_NAME}.perek.rest (${GIT_COMMIT_SHORT})" }
+        failure { echo "Deploy of ${APP_NAME}.perek.rest failed" }
+        always  { cleanWs() }
     }
-} 
+}
